@@ -6,6 +6,7 @@ var storage = {
     articleList: [],
     total_pages: '',
     current_page: 1,
+	index: (this.current_page-1)*20+1,
     articleListLength: '',
     limit: 10,
     movieList: [],
@@ -15,74 +16,72 @@ var storage = {
     movieBackground: document.getElementById('movieBackground'),
 };
 
+	function getData(apiName, config, render, error) {
+		$.ajax({
+			url: storage.url + apiName + storage.key  + config,
+			dataType: "json",
+			success: render,
+			error: error
+		});
+	}
+
 //-----------------------------------------  Movies List page (GRID)
-$(window).on('load', function (e) {
-    $('#movieBackground').hide();
-    getInfo("movie/top_rated", storage.current_page, renderList, error);     // Mivie List call
+	$(window).on('load', function (e) {
+		$('#movieBackground').hide();
+			// Mivie List call
+			render();
+	});
+	
 
-});
-$(window).scroll(function() {
-    var d = document.documentElement;
-    var offset = d.scrollTop + window.innerHeight;
-    var height = d.offsetHeight;
+	function render () {
+		getData("movie/top_rated", '&page=' + storage.current_page, toStorage , error); //API request for movie list   
 
-    //console.log('offset = ' + offset);
-    //console.log('height = ' + height);
+		
+		
+		$(window).on('scroll', function() {
+			  var d = document.documentElement;
+			  var offset = d.scrollTop + window.innerHeight;
+			  var height = d.offsetHeight;
 
-    if (offset === height) {
-        storage.current_page++
-        if (storage.current_page < storage.limit) {
-            getInfo("movie/top_rated", storage.current_page, renderList, error);
-            }
-    }
-});
-// ------------------------------------------ AJAX CALL FUNCTION -----------------------------------------------------------------
-function getInfo(apiName, config, render, error) {
-    $.ajax({
-        url: storage.url + apiName + storage.key  +config,
-        dataType: "json",
-        success: render,
-        error: error
-    });
-}
-
-
-// ------------------------------------------ RENDER MOVIE LIST FUNCTION -----------------------------------------------------------------
-function renderList (result, status, xhr) {
-
-    console.log(storage.articleList);
-    storage.articleList = storage.articleList.concat( result["results"]); // add new object to existing array
-    storage.total_pages =  result["total_pages"];
-    storage.articleListLength = storage.articleList.length;
-    articleList();
-
-
-    $(document).ajaxStart(function () {
-        $(".imageDiv img").show();
-    });
-
-    $(document).ajaxStop(function () {
-        $(".imageDiv img").hide();
-    });
-
-    $("input").on('change keyup paste', function (e) {
-
-        var input = document.getElementById('searchMovie');
-        getInfo("search/movie", "&page=1&include_adult=false&query=" + input.value, renderSearch, error);                  //  call search render
-
-    });
+			 //console.log('offset = ' + offset);
+				//console.log('height = ' + height);		
+				
+					if (offset === height) {									
+						storage.current_page++
+						console.log(storage.current_page)		
+						if (storage.current_page < storage.limit) {		
+							
+							
+							render ()	
+							
+						}		
+						
+					}	
+					
+	});
+		
+	}
+	function toStorage(result, status, xhr) {			
+		
+		storage.articleList = storage.articleList.concat( result["results"].slice(storage.index)); // add new object to existing array
+		
+		storage.total_pages =  result["total_pages"];
+		
+		storage.articleListLength = storage.articleList.length;
+		
+		ArticalList();
+		
+	}
 
 
-
-
-    function articleList(){
-
-
-        var resultHtml = $("<div class=\"row\"  id=\"articleList\">");
-       // var i = (storage.current_page-1)*20;
-
-        for (i = 0; i < storage.articleList.length; i++) {
-
+	function ArticalList () {
+		//--------------------------  Infinite scroll  > render() while limit allows
+	
+		var resultHtml = $("<div class=\"row\"  id=\"articleList\">");
+				
+		
+        for (var i = 0; i < storage.articleList.length; i++) {
+			 
             var image = storage.articleList[i]["poster_path"] == null ? "Image/no-image.png" : storage.imgUrl + storage.articleList[i]["poster_path"];
             var cutString =  storage.articleList[i].overview.slice(0,200);
             storage.articleList[i].overview  = cutString.slice(0, cutString.lastIndexOf('.'))+'.';
@@ -102,31 +101,63 @@ function renderList (result, status, xhr) {
                 + "</div>"
                 + "</div>"
             )
+		resultHtml.append("</div>");
+        $("#listM").html(resultHtml);
+		
+		
+		}
+		
         }
-
-        resultHtml.append("</div>");
-        $("#listM").html(resultHtml);}
-
-}
-function ArticalItem(){
-
+		
+		// ------------------------------------------ STATUS ERROR FUNCTION -----------------------------------------------------------------
+function error(xhr, status, error) {
+    $("#listM").html("Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText)
 }
 
-// ------------------------------------------ RENDER SEARCH LIST FUNCTION -----------------------------------------------------------------
+   // ------------------------------------------ RENDER SEARCH LIST FUNCTION -----------------------------------------------------------------
 
-function renderSearch(result, status, xhr) {
+	$("input").on('change keyup paste', function () {
+		
+        var input = document.getElementById('searchMovie');
+		clearSearch('searchList');
+		if (input.value!="") {
+        getData("search/movie", "&page=1&include_adult=false&query=" + input.value, searchToStorage, noInput);                  //  call search render
+		}
+	});
+	function noInput () {
+		clearSearch('searchList');
+	}
+
+function searchToStorage(result, status, xhr) {
+	
+	
     storage.movieList = result["results"];
     console.log(storage);
+    renderSearch()
+}
+    
+function renderSearch() {
+	
     var searchResult = $("<div class=\"MovieList\">");
 
-    for (var i = 0; i < result["results"].length; i++) {
-        searchResult.append("<div class=\"col-12 col-sm-12 col-md-8 input-group \" resourceId=\"" + storage.movieList[i]["id"] + "\">" + "<h4 class=\"card-title\">" + result["results"][i]["title"] + "</h4></div>")
+    for (var i = 0; i < storage.movieList.length; i++) {
+        searchResult.append("<div class=\"col-12 col-sm-12 col-md-8 input-group \" resourceId=\"" + storage.movieList[i]["id"] + "\">" + "<h4 class=\"card-title\">" + storage.movieList[i]["title"] + "</h4></div>")
     }
     searchResult.append("</div>");
     $("#searchList").html(searchResult);
 }
+function clearSearch(el){
+    document.getElementById(el).innerHTML = "";
+};
 
-// ------------------------------------------ STATUS ERROR FUNCTION -----------------------------------------------------------------
-function error(xhr, status, error) {
-    $("#listM").html("Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText)
-}
+function clearSearchValue(el){
+    document.getElementById(el).value = "";
+};
+
+
+
+
+
+
+
+
