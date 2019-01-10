@@ -16,6 +16,8 @@ var storage = {
     movieBackground: document.getElementById('movieBackground'),
 };
 
+
+
 	function getData(apiName, config, render, error) {
 		$.ajax({
 			url: storage.url + apiName + storage.key  + config,
