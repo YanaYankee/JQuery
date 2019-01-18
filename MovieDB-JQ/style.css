@@ -19,6 +19,7 @@ header {
 #listM {
     margin-top: 134px
 }
+
 .headerSearchName {
     color: #f0f8ff;
 }
@@ -147,27 +148,31 @@ header {
 }
 
 /*+++++++++++++++++++++++++ END SVG+++++++++++++++++*/
-
+.genre {
+    margin-right: 15px;
+    font-size: 16px;
+    color: #f0f8ff!important;
+}
 /*------------карусель карусель карусель ---------------------*/
 .carousel  {
-    /*max-width: 1080px; !* ширина всего блока *!*/
+    /*max-width: 1080px; !*  *!*/
     margin: 120px auto;
     width:100%;
-    /*margin-top: 150px;*/
+    
 }
 .carousel-wrapper {
-    margin: 10px 30px; /* отступы для стрелок */
-    overflow: hidden; /* скрываем содержимое, выходящее за рамки основной области */
+    margin: 10px 30px; 
+    overflow: hidden; 
     position:relative;
 }
 .carousel-items {
-    width: 10000px; /* устанавливаем большую ширину для набора элементов */
-    position: relative; /* позиционируем блок относительно основной области карусели */
+    width: 10000px; 
+    position: relative; 
 }
 .carousel-block {
-    float: left; /* выстраиваем все элементы карусели в ряд */
-    width: 250px; /* задаём ширину каждого элемента */
-    padding: 10px 10px 10px 0px; /* делаем оступы, чтобы элементы не сливались */
+    float: left; 
+    width: 250px;
+    padding: 10px 10px 10px 0px; 
 }
 .carousel-block img{
     display:block;
